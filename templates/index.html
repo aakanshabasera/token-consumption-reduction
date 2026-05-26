@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenTrim Dashboard — Context Optimizer</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #0b0f19;
+            --bg-surface: rgba(17, 24, 39, 0.7);
+            --bg-surface-solid: #111827;
+            --bg-card: rgba(31, 41, 55, 0.4);
+            --bg-input: #1f2937;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            
+            --color-primary: #10b981; /* Emerald green */
+            --color-primary-glow: rgba(16, 185, 129, 0.15);
+            --color-secondary: #3b82f6; /* Blue */
+            --color-secondary-glow: rgba(59, 130, 246, 0.15);
+            --color-warning: #f59e0b; /* Amber */
+            --color-warning-glow: rgba(245, 158, 11, 0.15);
+            --color-danger: #ef4444; /* Red */
+            --color-danger-glow: rgba(239, 68, 68, 0.15);
+            --color-purple: #8b5cf6;
+            
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+        }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, #d1d5db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-tab {
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #fff;
+            background: var(--bg-input);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .config-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .api-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .api-badge.active {
+            background-color: var(--color-primary-glow);
+            color: var(--color-primary);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .api-badge.inactive {
+            background-color: var(--color-warning-glow);
+            color: var(--color-warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        main {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: var(--bg-surface);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: var(--transition);
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        /* Dashboard Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .metric-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-info h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-val {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .metric-savings-badge {
+            background: linear-gradient(135deg, var(--color-primary), #059669);
+            color: #000;
+            font-weight: 800;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .savings-progress-container {
+            width: 80px;
+            height: 80px;
+            position: relative;
+        }
+
+        .circular-chart {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 3.8;
+        }
+
+        .circle {
+            fill: none;
+            stroke-width: 3.8;
+            stroke-linecap: round;
+            stroke: var(--color-primary);
+            animation: progress 1s ease-out forwards;
+        }
+
+        .percentage {
+            fill: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.55em;
+            text-anchor: middle;
+            font-weight: 700;
+        }
+
+        /* Two Column Layout */
+        .workspace-split {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Lists and Tree Styles */
+        .tree-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tree-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .action-btn-sm {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition);
+        }
+
+        .action-btn-sm:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--text-muted);
+        }
+
+        .action-btn-primary {
+            background: var(--color-primary);
+            color: #000;
+            border: none;
+            font-weight: 600;
+        }
+        .action-btn-primary:hover {
+            background: #059669;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .tree-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 550px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .domain-node {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: rgba(255,255,255,0.01);
+        }
+
+        .domain-toggle {
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.02);
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .domain-toggle:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        .domain-toggle-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .domain-badge {
+            background: rgba(255,255,255,0.05);
+            font-size: 0.75rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        .domain-files {
+            display: none;
+            list-style: none;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid var(--border-color);
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .domain-node.expanded .domain-files {
+            display: flex;
+        }
+
+        .file-item {
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .file-item:hover {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-primary);
+        }
+
+        .file-item.active {
+            background: var(--color-primary-glow);
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+
+        .file-meta-aside {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .badge-violation {
+            background-color: var(--color-danger-glow);
+            color: var(--color-danger);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        /* File Editor Container */
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: 100%;
+            min-height: 500px;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            background: rgba(0,0,0,0.2);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+        }
+
+        .editor-textarea {
+            width: 100%;
+            flex-grow: 1;
+            min-height: 380px;
+            background: #060913;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            color: #e5e7eb;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .editor-textarea:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+        }
+
+        .editor-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Form Inputs & Upload Zone */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            outline: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            border-color: var(--color-secondary);
+        }
+
+        .import-pane {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .import-pane {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .raw-input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .raw-textarea {
+            width: 100%;
+            height: 400px;
+            background: #060913;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            resize: none;
+            outline: none;
+        }
+
+        .options-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+
+        /* Preview Table */
+        .preview-list {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            max-height: 470px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .preview-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .preview-item:last-child {
+            border-bottom: none;
+        }
+
+        .preview-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-heading {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .preview-inputs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .preview-inputs select, .preview-inputs input {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .preview-snippet {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Reflection Cards */
+        .reflection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .reflect-card {
+            border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.02);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: var(--transition);
+        }
+
+        .reflect-card:hover {
+            border-color: var(--color-purple);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.1);
+        }
+
+        .reflect-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .reflect-file {
+            font-weight: 600;
+            font-size: 0.85rem;
+            font-family: 'Fira Code', monospace;
+            word-break: break-all;
+        }
+
+        .reflect-action-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .reflect-action-badge.archive {
+            background: var(--color-danger-glow);
+            color: var(--color-danger);
+        }
+
+        .reflect-action-badge.migrate {
+            background: var(--color-warning-glow);
+            color: var(--color-warning);
+        }
+
+        .reflect-action-badge.split {
+            background: var(--color-secondary-glow);
+            color: var(--color-secondary);
+        }
+
+        .reflect-reason {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .reflect-choices {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 0.35rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .choice-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+        }
+
+        .choice-btn.selected {
+            background: var(--color-purple);
+            color: #000;
+            border-color: var(--color-purple);
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+        }
+
+        .choice-btn.selected.archive {
+            background: var(--color-danger);
+            border-color: var(--color-danger);
+        }
+
+        .choice-btn.selected.migrate {
+            background: var(--color-warning);
+            border-color: var(--color-warning);
+        }
+
+        /* Health Alerts */
+        .alert-item {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: var(--color-warning);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            background: #1f2937;
+            border-left: 4px solid var(--color-primary);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            font-size: 0.9rem;
+            animation: slideIn 0.25s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-logo">T</div>
+                <div>
+                    <div class="brand-name">TokenTrim</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase;">Context Optimizer v1.0</div>
+                </div>
+            </div>
+            
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('explorer')">Tree Explorer</button>
+                <button class="nav-tab" onclick="switchTab('importer')">Import Splitter</button>
+                <button class="nav-tab" onclick="switchTab('reflection')">Reflection Board</button>
+                <button class="nav-tab" onclick="switchTab('settings')">Settings</button>
+                <button class="nav-tab" onclick="switchTab('chat')">💬 Chat</button>
+            </div>
+            
+            <div class="config-bar">
+                <span id="api-status-badge" class="api-badge inactive">Gemini Offline</span>
+                <span style="font-size: 0.8rem; color: var(--text-secondary);" id="active-workspace-lbl">loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Tab: Tree Explorer -->
+        <div id="tab-explorer" class="tab-content active">
+            <!-- Summary Stats -->
+            <div class="metrics-grid">
+                <div class="glass-card metric-card">
+                    <div class="metric-info">
+                        <h3>Boot Load Context</h3>
+                        <div class="metric-val" id="stat-boot-tokens">-</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Stub size loaded on launch</div>
+                    </div>
+                    <div class="savings-progress-container">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle" id="savings-ring" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <text x="18" y="20.3" class="percentage" id="savings-ring-val">0%</text>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="glass-card metric-card">
+                    <div class="metric-info">
+                        <h3>Flat Memory Store</h3>
+                        <div class="metric-val" id="stat-original-tokens">-</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Before pruning (total bytes)</div>
+                    </div>
+                    <div class="metric-savings-badge" id="savings-calc-badge">Saving 0%</div>
+                </div>
+
+                <div class="glass-card metric-card">
+                    <div class="metric-info">
+                        <h3>Hierarchical Store</h3>
+                        <div class="metric-val" id="stat-total-tokens">-</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Total tokens in all domains</div>
+                    </div>
+                    <div>
+                        <div style="text-align: right; font-weight: 700; color: var(--color-secondary);" id="stat-domains-count">-</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Active Domains</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Double column browser -->
+            <div class="workspace-split">
+                <!-- Left: Tree list -->
+                <div class="glass-card">
+                    <div class="tree-header">
+                        <h2>Memory Tree</h2>
+                        <button class="action-btn-sm" onclick="fetchTree()">
+                            ↻ Refresh
+                        </button>
+                    </div>
+                    
+                    <ul class="tree-list" id="tree-root">
+                        <!-- Javascript filled -->
+                    </ul>
+                </div>
+
+                <!-- Right: Content Editor -->
+                <div class="glass-card">
+                    <div class="editor-container" id="editor-container">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📄</div>
+                            <h3>No File Selected</h3>
+                            <p style="margin-top: 0.5rem;">Select a file from the memory tree to edit or manage its details.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Import Splitter -->
+        <div id="tab-importer" class="tab-content">
+            <div class="glass-card">
+                <div style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Import and Split Flat Memory</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">Paste your massive, flat MEMORY.md file. TokenTrim will analyze each section and categorize it into folders using semantic intelligence.</p>
+                </div>
+
+                <div class="import-pane">
+                    <!-- Left: paste input -->
+                    <div class="raw-input-area">
+                        <textarea id="import-text" class="raw-textarea" placeholder="# My AI Memory&#10;&#10;## Key Identity Facts&#10;I prefer python.&#10;&#10;## Billing Details&#10;Clients are billed monthly."></textarea>
+                        
+                        <div class="options-row">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="import-use-llm" checked>
+                                Use smart LLM classification (Gemini)
+                            </label>
+                            
+                            <button class="action-btn-sm action-btn-primary" style="padding: 0.5rem 1.5rem;" onclick="processSplit()">
+                                Analyze & Split
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: split preview -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="font-size: 1rem; font-weight: 600;">Split Preview</h3>
+                            <button id="apply-split-btn" class="action-btn-sm action-btn-primary" style="display: none;" onclick="applySplit()">
+                                ✓ Save Memory Tree
+                            </button>
+                        </div>
+
+                        <div class="preview-list" id="split-preview-container">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">⚡</div>
+                                <h3>Ready to Analyze</h3>
+                                <p style="margin-top: 0.5rem;">Click 'Analyze & Split' to view domain suggestions and token counts before writing files.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Reflection Board -->
+        <div id="tab-reflection" class="tab-content">
+            <div class="glass-card" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 700;">Optimization Reflection Board</h2>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">Run Gemini analysis across all files to flag stale metadata, oversize domains, and suggest purges or domain reallocations.</p>
+                    </div>
+                    <button class="action-btn-sm action-btn-primary" onclick="runReflectionAnalysis()">
+                        🧠 Run LLM Reflection
+                    </button>
+                </div>
+
+                <div id="reflection-status-area">
+                    <!-- Javascript filled -->
+                </div>
+            </div>
+
+            <!-- Alerts list -->
+            <div class="glass-card">
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Health Notifications</h3>
+                <div id="health-alerts-container">
+                    <!-- Javascript filled -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Settings -->
+        <div id="tab-settings" class="tab-content">
+            <div class="glass-card" style="max-width: 600px;">
+                <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Configuration</h2>
+                
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="setting-workspace">Active Workspace Directory</label>
+                        <input type="text" id="setting-workspace" class="form-input" readonly>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Configured at boot of the FastAPI server.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="setting-apikey">Gemini API Key (Google AI Studio)</label>
+                        <input type="password" id="setting-apikey" class="form-input" placeholder="AIzaSy...">
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Required for smart semantic classification and reflection auditing. Keys are stored in environment memory.</span>
+                    </div>
+
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="action-btn-sm action-btn-primary" style="padding: 0.6rem 1.5rem;" onclick="saveSettings()">
+                            Save Settings
+                        </button>
+                        <button class="action-btn-sm" style="padding: 0.6rem 1.5rem;" onclick="runReindexAction()">
+                            Force Reindex
+                        </button>
+                        <button class="action-btn-sm" style="padding: 0.6rem 1.5rem; color: var(--color-danger);" onclick="runPurgeAction()">
+                            Run Purge Cleanup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // State
+        let activeTab = 'explorer';
+        let statusData = {};
+        let selectedFile = null;
+        let previewItems = [];
+        let reflectionCandidates = [];
+        let reflectionSelections = {}; // file_path -> action choice
+
+        // Init
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchStatus();
+            fetchTree();
+            fetchStagedReflection();
+        });
+
+        // Tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Find target tab trigger
+            const tabs = {
+                'chat': 4,
+                explorer: 0,
+                importer: 1,
+                reflection: 2,
+                settings: 3
+            };
+            document.querySelectorAll('.nav-tab')[tabs[tabName]].classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            activeTab = tabName;
+            
+            if (tabName === 'explorer') {
+                fetchTree();
+                fetchStatus();
+            } else if (tabName === 'reflection') {
+                fetchStagedReflection();
+                fetchStatus();
+            }
+        }
+
+        // Toasts
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if (type === 'error') {
+                toast.style.borderLeftColor = 'var(--color-danger)';
+            } else if (type === 'warning') {
+                toast.style.borderLeftColor = 'var(--color-warning)';
+            }
+            toast.innerText = msg;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // API Fetchers
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                statusData = data;
+                
+                // Update UI badges
+                const badge = document.getElementById('api-status-badge');
+                if (data.api_key_configured) {
+                    badge.innerText = "Gemini Active";
+                    badge.className = "api-badge active";
+                    document.getElementById('setting-apikey').placeholder = "••••••••••••••••";
+                } else {
+                    badge.innerText = "Gemini Offline";
+                    badge.className = "api-badge inactive";
+                }
+                
+                document.getElementById('active-workspace-lbl').innerText = `Workspace: ${data.workspace.split('/').pop()}`;
+                document.getElementById('setting-workspace').value = data.workspace;
+                
+                // Dashboard numbers
+                document.getElementById('stat-boot-tokens').innerText = data.active_boot_tokens;
+                document.getElementById('stat-original-tokens').innerText = data.original_tokens;
+                document.getElementById('stat-total-tokens').innerText = data.total_store_tokens;
+                
+                // Ring and text
+                const ring = document.getElementById('savings-ring');
+                const ringVal = document.getElementById('savings-ring-val');
+                const badgeCalc = document.getElementById('savings-calc-badge');
+                
+                const savings = data.savings_percent;
+                const strokeDash = `${savings}, 100`;
+                ring.setAttribute('stroke-dasharray', strokeDash);
+                ringVal.textContent = `${Math.round(savings)}%`;
+                badgeCalc.innerText = `Saving ${savings}%`;
+                
+                // Alerts list
+                const alertContainer = document.getElementById('health-alerts-container');
+                alertContainer.innerHTML = '';
+                if (data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        const alert = document.createElement('div');
+                        alert.className = 'alert-item';
+                        alert.innerHTML = `⚠️ ${msg}`;
+                        alertContainer.appendChild(alert);
+                    });
+                } else {
+                    alertContainer.innerHTML = `<div class="empty-state" style="padding: 1.5rem;">✓ No health violations detected. Memory is healthy.</div>`;
+                }
+            } catch (err) {
+                console.error("Status fetch error", err);
+            }
+        }
+
+        async function fetchTree() {
+            try {
+                const response = await fetch('/api/tree');
+                const data = await response.json();
+                
+                const root = document.getElementById('tree-root');
+                root.innerHTML = '';
+                
+                let domainCount = 0;
+                
+                if (data.domains && Object.keys(data.domains).length > 0) {
+                    Object.keys(data.domains).forEach(domain => {
+                        domainCount++;
+                        const files = data.domains[domain];
+                        const domainNode = document.createElement('li');
+                        domainNode.className = 'domain-node';
+                        
+                        // Count tokens
+                        const totalTokens = files.reduce((sum, f) => sum + f.tokens, 0);
+                        
+                        domainNode.innerHTML = `
+                            <div class="domain-toggle" onclick="toggleDomainNode(this.parentNode)">
+                                <div class="domain-toggle-info">
+                                    <span>📂</span>
+                                    <span style="text-transform: capitalize;">${domain}</span>
+                                </div>
+                                <div class="domain-toggle-info">
+                                    <span class="domain-badge">${files.length} files</span>
+                                    <span class="domain-badge">${totalTokens} t</span>
+                                </div>
+                            </div>
+                            <ul class="domain-files">
+                                ${files.map(f => `
+                                    <li class="file-item ${selectedFile && selectedFile.path === `memory/domains/${domain}/${f.name}` ? 'active' : ''}" 
+                                        onclick="event.stopPropagation(); loadFile('memory/domains/${domain}/${f.name}')">
+                                        <span>📝 ${f.name}</span>
+                                        <div class="file-meta-aside">
+                                            ${f.violation ? '<span class="badge-violation">stale >30d</span>' : ''}
+                                            <span>${f.tokens} tokens</span>
+                                        </div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                        root.appendChild(domainNode);
+                    });
+                } else {
+                    root.innerHTML = `<div class="empty-state">No domain files found. Go to Import Splitter to load memory.</div>`;
+                }
+                
+                document.getElementById('stat-domains-count').innerText = domainCount;
+            } catch (err) {
+                console.error("Tree fetch error", err);
+            }
+        }
+
+        function toggleDomainNode(node) {
+            node.classList.toggle('expanded');
+        }
+
+        async function loadFile(filepath) {
+            try {
+                // Remove active classes
+                document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+                
+                // Highlight active item if available in tree (handled during redraw or manually)
+                
+                const response = await fetch(`/api/file?path=${encodeURIComponent(filepath)}`);
+                if (!response.ok) {
+                    showToast("Could not load file details", "error");
+                    return;
+                }
+                const data = await response.json();
+                selectedFile = data;
+                
+                // Update editor pane
+                const container = document.getElementById('editor-container');
+                container.innerHTML = `
+                    <div class="editor-header">
+                        <div class="editor-title">${filepath}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${data.tokens} tokens</div>
+                    </div>
+                    <textarea class="editor-textarea" id="file-editor-text">${data.content}</textarea>
+                    <div class="editor-actions">
+                        <button class="action-btn-sm" style="color: var(--color-danger);" onclick="archiveActiveFile('${filepath}')">
+                            🗑 Archive
+                        </button>
+                        <button class="action-btn-sm" onclick="migrateActiveFilePrompt('${filepath}')">
+                            ⇄ Migrate
+                        </button>
+                        <button class="action-btn-sm action-btn-primary" style="padding: 0.5rem 1.5rem;" onclick="saveActiveFile('${filepath}')">
+                            Save Changes
+                        </button>
+                    </div>
+                `;
+                
+                // Mark class active on clicked item
+                event.target.closest('.file-item')?.classList.add('active');
+            } catch (err) {
+                showToast("Error loading file: " + err.message, "error");
+            }
+        }
+
+        async function saveActiveFile(filepath) {
+            const textarea = document.getElementById('file-editor-text');
+            if (!textarea) return;
+            
+            try {
+                const response = await fetch('/api/file', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filepath: filepath, content: textarea.value })
+                });
+                
+                if (response.ok) {
+                    showToast("File saved successfully.");
+                    loadFile(filepath);
+                    fetchTree();
+                    fetchStatus();
+                } else {
+                    const err = await response.json();
+                    showToast("Save failed: " + err.detail, "error");
+                }
+            } catch (err) {
+                showToast("Save error: " + err.message, "error");
+            }
+        }
+
+        async function archiveActiveFile(filepath) {
+            if (!confirm(`Are you sure you want to stage ${filepath.split('/').pop()} for archive? It will be renamed with __DELETE.md and purged after 180 days.`)) {
+                return;
+            }
+            
+            try {
+                // Call API editor endpoint indirectly by renaming file or resolve reflection-like action
+                // Let's call api/action for reflect or custom api to resolve
+                const actionData = [{ file: filepath, action: 'archive' }];
+                const response = await fetch('/api/resolve-reflection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(actionData)
+                });
+                
+                if (response.ok) {
+                    showToast("File staged for archive.");
+                    document.getElementById('editor-container').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🗑</div>
+                            <h3>File Staged for Archive</h3>
+                            <p style="margin-top: 0.5rem;">File renamed to __DELETE.md and will be purged in 180 days.</p>
+                        </div>
+                    `;
+                    selectedFile = null;
+                    fetchTree();
+                    fetchStatus();
+                } else {
+                    showToast("Archive failed", "error");
+                }
+            } catch (err) {
+                showToast("Archive error: " + err.message, "error");
+            }
+        }
+
+        async function migrateActiveFilePrompt(filepath) {
+            const dest = prompt("Enter target domain name (e.g. business, infrastructure, identity, legal):");
+            if (!dest) return;
+            
+            try {
+                const actionData = [{ file: filepath, action: 'migrate', suggested_domain: dest }];
+                const response = await fetch('/api/resolve-reflection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(actionData)
+                });
+                
+                if (response.ok) {
+                    showToast(`File migrated to ${dest} domain.`);
+                    
+                    const filename = filepath.split('/').pop();
+                    const newPath = `memory/domains/${dest.toLowerCase()}/${filename}`;
+                    loadFile(newPath);
+                    fetchTree();
+                    fetchStatus();
+                } else {
+                    showToast("Migration failed", "error");
+                }
+            } catch (err) {
+                showToast("Migration error: " + err.message, "error");
+            }
+        }
+
+        // Settings actions
+        async function saveSettings() {
+            const key = document.getElementById('setting-apikey').value;
+            if (!key) {
+                showToast("Please enter an API Key", "error");
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/save-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_key: key })
+                });
+                
+                if (response.ok) {
+                    showToast("Settings saved and API key activated.");
+                    document.getElementById('setting-apikey').value = '';
+                    fetchStatus();
+                } else {
+                    showToast("Failed to save settings.", "error");
+                }
+            } catch (err) {
+                showToast("Settings save error: " + err.message, "error");
+            }
+        }
+
+        async function runReindexAction() {
+            try {
+                const response = await fetch('/api/run-action?action=reindex', { method: 'POST' });
+                if (response.ok) {
+                    showToast("Force reindex completed.");
+                    fetchStatus();
+                    fetchTree();
+                } else {
+                    showToast("Reindex failed.", "error");
+                }
+            } catch (err) {
+                showToast("Reindex error: " + err.message, "error");
+            }
+        }
+
+        async function runPurgeAction() {
+            try {
+                const response = await fetch('/api/run-action?action=purge', { method: 'POST' });
+                if (response.ok) {
+                    const data = await response.json();
+                    showToast(data.message);
+                    fetchStatus();
+                    fetchTree();
+                } else {
+                    showToast("Purge failed.", "error");
+                }
+            } catch (err) {
+                showToast("Purge error: " + err.message, "error");
+            }
+        }
+
+        // Importer split preview
+        async function processSplit() {
+            const text = document.getElementById('import-text').value;
+            const useLlm = document.getElementById('import-use-llm').checked;
+            
+            if (!text.trim()) {
+                showToast("Please paste some markdown memory first.", "error");
+                return;
+            }
+            
+            const container = document.getElementById('split-preview-container');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⏳</div>
+                    <h3>Processing...</h3>
+                    <p style="margin-top: 0.5rem;">TokenTrim is parsing headings and evaluating category placements.</p>
+                </div>
+            `;
+            document.getElementById('apply-split-btn').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/split-preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ markdown_text: text, use_llm: useLlm })
+                });
+                
+                if (!response.ok) {
+                    const err = await response.json();
+                    showToast("Split analysis failed: " + err.detail, "error");
+                    container.innerHTML = `<div class="empty-state">Analysis failed. Set GEMINI_API_KEY if using LLM.</div>`;
+                    return;
+                }
+                
+                const data = await response.json();
+                previewItems = data;
+                
+                if (data.length === 0) {
+                    container.innerHTML = `<div class="empty-state">No section headers detected.</div>`;
+                    return;
+                }
+                
+                container.innerHTML = '';
+                data.forEach((item, index) => {
+                    const pItem = document.createElement('div');
+                    pItem.className = 'preview-item';
+                    
+                    const domainsOpts = ["identity", "business", "infrastructure", "community", "agents", "legal", "dates", "general"];
+                    if (!domainsOpts.includes(item.proposed_domain)) {
+                        domainsOpts.push(item.proposed_domain);
+                    }
+                    
+                    pItem.innerHTML = `
+                        <div class="preview-header-row">
+                            <span class="preview-heading">${item.is_intro ? 'Overview' : item.heading}</span>
+                            <span style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600;">${item.tokens} tokens</span>
+                        </div>
+                        <div class="preview-snippet">${item.content.split('\n').slice(0, 3).join(' ')}</div>
+                        
+                        ${item.is_intro ? '' : `
+                            <div class="preview-inputs">
+                                <select onchange="updatePreviewDomain(${index}, this.value)">
+                                    ${domainsOpts.map(d => `<option value="${d}" ${item.proposed_domain === d ? 'selected' : ''}>${d}</option>`).join('')}
+                                </select>
+                                <input type="text" value="${item.proposed_filename}" onchange="updatePreviewFilename(${index}, this.value)" placeholder="filename-slug">
+                            </div>
+                        `}
+                    `;
+                    container.appendChild(pItem);
+                });
+                
+                document.getElementById('apply-split-btn').style.display = 'block';
+                showToast("Split analysis loaded. You can modify domains before saving.");
+            } catch (err) {
+                showToast("Split error: " + err.message, "error");
+            }
+        }
+
+        function updatePreviewDomain(index, val) {
+            previewItems[index].proposed_domain = val;
+        }
+
+        function updatePreviewFilename(index, val) {
+            previewItems[index].proposed_filename = val;
+        }
+
+        async function applySplit() {
+            if (previewItems.length === 0) return;
+            
+            try {
+                const response = await fetch('/api/apply-split', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: previewItems })
+                });
+                
+                if (response.ok) {
+                    showToast("Split applied and database populated successfully!");
+                    document.getElementById('split-preview-container').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✓</div>
+                            <h3>Memory Organized</h3>
+                            <p style="margin-top: 0.5rem;">Files written. Navigate to Tree Explorer to view.</p>
+                        </div>
+                    `;
+                    document.getElementById('import-text').value = '';
+                    document.getElementById('apply-split-btn').style.display = 'none';
+                    previewItems = [];
+                    fetchTree();
+                    fetchStatus();
+                } else {
+                    showToast("Failed to write memory tree files.", "error");
+                }
+            } catch (err) {
+                showToast("Apply split error: " + err.message, "error");
+            }
+        }
+
+        // Reflection Staging & Resolutions
+        async function fetchStagedReflection() {
+            try {
+                const response = await fetch('/api/reflection-staging');
+                const data = await response.json();
+                
+                const container = document.getElementById('reflection-status-area');
+                container.innerHTML = '';
+                
+                if (!data.candidates || data.candidates.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="padding: 2rem;">
+                            <div class="empty-state-icon">🌱</div>
+                            <h3>No Staged Suggestions</h3>
+                            <p style="margin-top: 0.5rem;">Click 'Run LLM Reflection' to query Gemini for structural cleanups.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                reflectionCandidates = data.candidates;
+                reflectionSelections = {};
+                
+                // Add header info
+                const header = document.createElement('div');
+                header.style.display = 'flex';
+                header.style.justify = 'space-between';
+                header.style.alignItems = 'center';
+                header.style.marginBottom = '1.5rem';
+                header.innerHTML = `
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">staged at: ${data.triggered_at || 'unknown'}</div>
+                    <button class="action-btn-sm action-btn-primary" onclick="applyReflectionResolutions()">
+                        Apply Selected Actions
+                    </button>
+                `;
+                container.appendChild(header);
+                
+                const grid = document.createElement('div');
+                grid.className = 'reflection-grid';
+                
+                reflectionCandidates.forEach((cand, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'reflect-card';
+                    
+                    const filename = cand.file.split('/').pop();
+                    
+                    // pre-select recommended action
+                    reflectionSelections[cand.file] = cand.action;
+                    
+                    card.innerHTML = `
+                        <div class="reflect-card-header">
+                            <span class="reflect-file">${filename}</span>
+                            <span class="reflect-action-badge ${cand.action}">${cand.action}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Path: ${cand.file}</div>
+                        <div class="reflect-reason">${cand.reason || 'Audited by LLM.'}</div>
+                        
+                        <div class="reflect-choices">
+                            <button class="choice-btn ${cand.action === 'keep' ? 'selected' : ''}" onclick="selectReflectionChoice(this, ${idx}, 'keep')">Keep</button>
+                            <button class="choice-btn ${cand.action === 'migrate' ? 'selected migrate' : ''}" onclick="selectReflectionChoice(this, ${idx}, 'migrate')">Migrate</button>
+                            <button class="choice-btn ${cand.action === 'archive' ? 'selected archive' : ''}" onclick="selectReflectionChoice(this, ${idx}, 'archive')">Archive</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                
+                container.appendChild(grid);
+            } catch (err) {
+                console.error("Reflection fetch error", err);
+            }
+        }
+
+        function selectReflectionChoice(btn, idx, choice) {
+            const card = btn.closest('.reflect-card');
+            card.querySelectorAll('.choice-btn').forEach(b => b.className = 'choice-btn');
+            
+            let extraClass = '';
+            if (choice === 'migrate') extraClass = ' migrate';
+            if (choice === 'archive') extraClass = ' archive';
+            
+            btn.className = `choice-btn selected${extraClass}`;
+            
+            const cand = reflectionCandidates[idx];
+            reflectionSelections[cand.file] = choice;
+        }
+
+        async function applyReflectionResolutions() {
+            const payload = Object.keys(reflectionSelections).map(file => {
+                const action = reflectionSelections[file];
+                // Find matching candidate details
+                const cand = reflectionCandidates.find(c => c.file === file);
+                return {
+                    file: file,
+                    action: action,
+                    suggested_domain: cand ? cand.suggested_domain : null
+                };
+            });
+            
+            try {
+                const response = await fetch('/api/resolve-reflection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    showToast("Optimization recommendations applied successfully.");
+                    fetchStagedReflection();
+                    fetchTree();
+                    fetchStatus();
+                } else {
+                    showToast("Failed to apply resolutions.", "error");
+                }
+            } catch (err) {
+                showToast("Resolution error: " + err.message, "error");
+            }
+        }
+
+        async function runReflectionAnalysis() {
+            const statusArea = document.getElementById('reflection-status-area');
+            statusArea.innerHTML = `
+                <div class="empty-state" style="padding: 2.5rem;">
+                    <div class="empty-state-icon">⏳</div>
+                    <h3>Running LLM Audit...</h3>
+                    <p style="margin-top: 0.5rem;">Analyzing file counts, token sizes, and file ages using Gemini.</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/run-action?action=reflect', { method: 'POST' });
+                if (response.ok) {
+                    showToast("LLM reflection completed and staged.");
+                    fetchStagedReflection();
+                    fetchStatus();
+                } else {
+                    const err = await response.json();
+                    showToast("Reflection audit failed: " + err.detail, "error");
+                    fetchStagedReflection();
+                }
+            } catch (err) {
+                showToast("Reflection error: " + err.message, "error");
+                fetchStagedReflection();
+            }
+        }
+
+        // ── CHAT ──────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('or_key');
+            if (saved) document.getElementById('chat-api-key').value = saved;
+        });
+
+        function addMessage(role, text) {
+            const box = document.getElementById('chat-messages');
+            const isFirst = box.querySelector('[data-placeholder]');
+            if (isFirst) isFirst.remove();
+
+            const bubble = document.createElement('div');
+            bubble.style.cssText = role === 'user'
+                ? 'align-self:flex-end;background:var(--color-primary);color:#000;padding:0.75rem 1rem;border-radius:12px 12px 2px 12px;max-width:75%;font-size:0.9rem;font-weight:500'
+                : 'align-self:flex-start;background:var(--bg-card);border:1px solid var(--border-color);padding:0.75rem 1rem;border-radius:12px 12px 12px 2px;max-width:85%;font-size:0.9rem;white-space:pre-wrap';
+            bubble.textContent = text;
+            box.appendChild(bubble);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chat-input');
+            const question = input.value.trim();
+            const apiKey = document.getElementById('chat-api-key').value.trim();
+
+            if (!question) return;
+            if (!apiKey) { showToast('Please enter your OpenRouter API key first', 'error'); return; }
+
+            input.value = '';
+            addMessage('user', question);
+            addMessage('bot', '⏳ Thinking...');
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, api_key: apiKey })
+                });
+
+                const data = await res.json();
+                
+                // Remove thinking bubble
+                const msgs = document.getElementById('chat-messages');
+                msgs.lastChild.remove();
+
+                if (res.ok) {
+                    addMessage('bot', data.answer);
+                    
+                    // Show token report
+                    const report = document.getElementById('chat-token-report');
+                    report.style.display = 'block';
+                    report.innerHTML = `
+                        <span style="color:var(--text-secondary)">📊 Token Report — </span>
+                        <span style="color:var(--color-danger)">Before: <b>${data.tokens_before}</b></span> &nbsp;→&nbsp;
+                        <span style="color:var(--color-primary)">After: <b>${data.tokens_after}</b></span> &nbsp;|&nbsp;
+                        <span style="color:var(--color-primary)">Saved: <b>${data.saved} tokens (${data.percent}%)</b></span> &nbsp;|&nbsp;
+                        <span style="color:var(--text-secondary)">Domain used: <b>${data.domain_used}</b></span>
+                    `;
+                } else {
+                    addMessage('bot', 'Error: ' + (data.detail || 'Something went wrong'));
+                }
+            } catch (err) {
+                const msgs = document.getElementById('chat-messages');
+                msgs.lastChild.remove();
+                addMessage('bot', 'Error: ' + err.message);
+            }
+        }
+        // ──────────────────────────────────────────────────
+    </script>
+
+        <!-- Tab: Chat -->
+        <div id="tab-chat" class="tab-content">
+            <div style="max-width:800px;margin:2rem auto;padding:0 1rem">
+                <div style="background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem">
+                    <label style="font-size:0.75rem;color:var(--text-secondary);display:block;margin-bottom:0.5rem">OPENROUTER API KEY</label>
+                    <input id="chat-api-key" type="password" placeholder="sk-or-v1-..." 
+                        style="width:100%;background:var(--bg-input);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:0.75rem;color:var(--text-primary);font-family:monospace;font-size:0.85rem"
+                        oninput="localStorage.setItem('or_key', this.value)"/>
+                </div>
+
+                <div id="chat-messages" style="background:var(--bg-surface);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:1.5rem;min-height:400px;max-height:500px;overflow-y:auto;margin-bottom:1rem;display:flex;flex-direction:column;gap:1rem">
+                    <div style="color:var(--text-secondary);text-align:center;margin:auto">
+                        💬 Ask me anything about your memory
+                    </div>
+                </div>
+
+                <div id="chat-token-report" style="display:none;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;font-size:0.8rem">
+                </div>
+
+                <div style="display:flex;gap:0.75rem">
+                    <input id="chat-input" type="text" placeholder="Type your question and press Enter..." 
+                        style="flex:1;background:var(--bg-input);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:0.75rem 1rem;color:var(--text-primary);font-size:0.9rem"
+                        onkeydown="if(event.key==='Enter') sendChat()"/>
+                    <button onclick="sendChat()" 
+                        style="background:var(--color-primary);color:#000;border:none;border-radius:var(--radius-sm);padding:0.75rem 1.5rem;font-weight:600;cursor:pointer;font-size:0.9rem">
+                        Ask ▶
+                    </button>
+                </div>
+            </div>
+        </div>
+</body>
+</html>
